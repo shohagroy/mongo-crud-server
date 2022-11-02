@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 
@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 // mongodb section
 const uri =
-  "mongodb+srv://demo_1:Password27@Shohag27@cluster0.u2jjc2l.mongodb.net/?retryWrites=true&w=majority";
+  "mongodb+srv://mongodb-simple:Password27Shohag27@cluster0.u2jjc2l.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -22,10 +22,27 @@ const client = new MongoClient(uri, {
 const run = async () => {
   try {
     const itemsCollection = client.db("allItems").collection("items");
+
+    app.get("/items", async (req, res) => {
+      const query = {};
+      const cursor = itemsCollection.find(query);
+      const allItems = await cursor.toArray();
+      res.send(allItems);
+    });
+
     app.post("/items", async (req, res) => {
       const item = req.body;
       const result = await itemsCollection.insertOne(item);
+      res.send(result);
       console.log(result);
+    });
+
+    app.delete("/items/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+
+      const result = await itemsCollection.deleteOne(query);
+      res.send(result);
     });
   } finally {
   }
